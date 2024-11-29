@@ -1,0 +1,14 @@
+Index: 973, File: You Know You're Right.wav
+Index: 1329, File: Bury Me With It.wav
+Index: 1957, File: Famous Blue Raincoat.wav
+Index: 2088, File: Girl's Not Grey.wav
+Index: 3820, File: Sick Sad Little World.wav
+Index: 6885, File: Take Me Anywhere.wav
+Index: 6947, File: So Jealous.wav
+Index: 7350, File: When Worlds Collide.wav
+Index: 10655, File: The Things We Do For Love.wav
+
+Lost Indexes:
+[973, 1329, 1957, 2088, 3820, 6885, 6947, 7350, 10655]
+Lost Files:
+["You Know You're Right.wav", 'Bury Me With It.wav', 'Famous Blue Raincoat.wav', "Girl's Not Grey.wav", 'Sick Sad Little World.wav', 'Take Me Anywhere.wav', 'So Jealous.wav', 'When Worlds Collide.wav', 'The Things We Do For Love.wav']

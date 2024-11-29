@@ -1,0 +1,14 @@
+Index: 973, File: You Know You're Right.jpg
+Index: 1329, File: Bury Me With It.jpg
+Index: 1957, File: Famous Blue Raincoat.jpg
+Index: 2088, File: Girl's Not Grey.jpg
+Index: 3820, File: Sick Sad Little World.jpg
+Index: 6885, File: Take Me Anywhere.jpg
+Index: 6947, File: So Jealous.jpg
+Index: 7350, File: When Worlds Collide.jpg
+Index: 10655, File: The Things We Do For Love.jpg
+
+Lost Indexes:
+[973, 1329, 1957, 2088, 3820, 6885, 6947, 7350, 10655]
+Lost Files:
+["You Know You're Right.jpg", 'Bury Me With It.jpg', 'Famous Blue Raincoat.jpg', "Girl's Not Grey.jpg", 'Sick Sad Little World.jpg', 'Take Me Anywhere.jpg', 'So Jealous.jpg', 'When Worlds Collide.jpg', 'The Things We Do For Love.jpg']

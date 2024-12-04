@@ -1,0 +1,191 @@
+package main
+
+import (
+	"database/sql"
+	"encoding/csv"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+)
+
+func loadEnv() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+// PostgreSQL connection details from environment variables
+var (
+	host     = os.Getenv("DB_HOST")
+	port     = os.Getenv("DB_PORT")
+	user     = os.Getenv("DB_USER")
+	password = os.Getenv("DB_PASSWORD")
+	dbname   = os.Getenv("DB_NAME")
+)
+
+// Function to create the table in PostgreSQL
+func createTable(db *sql.DB, tableName string, columns []string) error {
+	// Create table query with dynamic columns
+	columnDefinitions := make([]string, len(columns))
+	for i, col := range columns {
+		columnDefinitions[i] = fmt.Sprintf("\"%s\" TEXT", col)
+	}
+	query := fmt.Sprintf(`CREATE TABLE IF NOT EXISTS %s (
+		id SERIAL PRIMARY KEY,
+		%s
+	);`, tableName, strings.Join(columnDefinitions, ", "))
+
+	// Execute the query
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error creating table: %w", err)
+	}
+	return nil
+}
+
+// Function to insert data into the PostgreSQL table
+func insertData(db *sql.DB, tableName string, row []string) error {
+	// Prepare query to insert the row into the table
+	placeholders := make([]string, len(row))
+	for i := range row {
+		placeholders[i] = fmt.Sprintf("$%d", i+1)
+	}
+	query := fmt.Sprintf(`INSERT INTO %s (%s) VALUES (%s)`,
+		tableName,
+		strings.Join([]string{"id"}, ", "), // Skip primary column `id`
+		strings.Join(placeholders, ", "))
+
+	args := make([]interface{}, len(row))
+	for i, v := range row {
+		args[i] = v // Assign string to interface{}
+	}
+
+	// Execute the insert query
+	_, err := db.Exec(query, args...)
+	if err != nil {
+		return fmt.Errorf("error inserting row: %w", err)
+	}
+	return nil
+}
+
+// Function to parse the CSV file and load into PostgreSQL
+func loadCSVToPostgres(filePath, tableName, separator string) error {
+	// Open the CSV file
+	file, err := os.Open(filePath)
+	if err != nil {
+		return fmt.Errorf("error opening file: %w", err)
+	}
+	defer file.Close()
+
+	// Set the CSV separator based on user input
+	var r *csv.Reader
+	if separator == ";" {
+		r = csv.NewReader(file)
+		r.Comma = ';'
+	} else {
+		r = csv.NewReader(file)
+	}
+
+	// Read the CSV records
+	records, err := r.ReadAll()
+	if err != nil {
+		return fmt.Errorf("error reading CSV file: %w", err)
+	}
+
+	// Get the column names from the first row (header)
+	columns := records[0]
+
+	// Connect to PostgreSQL
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
+		user, password, dbname, host, port)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		return fmt.Errorf("error connecting to the database: %w", err)
+	}
+	defer db.Close()
+
+	// Create the table
+	err = createTable(db, tableName, columns)
+	if err != nil {
+		return err
+	}
+
+	// Insert data into PostgreSQL
+	for _, record := range records[1:] {
+		err = insertData(db, tableName, record)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Handler to accept a file upload and process it
+func uploadCSVHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse the form to retrieve the file
+	err := r.ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
+	file, _, err := r.FormFile("file")
+	if err != nil {
+		http.Error(w, "Error retrieving file", http.StatusInternalServerError)
+		return
+	}
+	defer file.Close()
+
+	// Temporarily store the file
+	tmpFile, err := os.CreateTemp("", "uploaded_file_*")
+	if err != nil {
+		http.Error(w, "Error creating temp file", http.StatusInternalServerError)
+		return
+	}
+	defer os.Remove(tmpFile.Name())
+
+	// Copy the uploaded file into the temp file
+	_, err = io.Copy(tmpFile, file)
+	if err != nil {
+		http.Error(w, "Error saving file", http.StatusInternalServerError)
+		return
+	}
+
+	// Process the file
+	// For this example, assume we want to process a CSV and load it into PostgreSQL
+	tableName := "your_table_name" // Example table name
+	separator := ","               // Default to comma, could be changed if needed
+
+	err = loadCSVToPostgres(tmpFile.Name(), tableName, separator)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Error processing CSV file: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	// Return success message
+	w.Write([]byte("File uploaded and processed successfully"))
+}
+
+func main() {
+	loadEnv()
+
+	// Set up the HTTP server and routes
+	http.HandleFunc("/upload", uploadCSVHandler)
+
+	// Start the server
+	fmt.Println("Server started at :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}

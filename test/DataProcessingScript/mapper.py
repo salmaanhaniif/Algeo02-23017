@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-df = pd.read_csv('MusicInfo.csv', encoding='utf-8')
+df = pd.read_csv('../MusicInfo.csv', encoding='utf-8')
 # Define the clean_filename function
 def clean_filename(filename):
     invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'  
@@ -46,11 +46,11 @@ for index, row in df.iloc[:end_index+1].iterrows():
 
 # If there are any lost rows, write them to a text file
 if filtered_rows:
-    with open('mapper.txt', 'w', encoding='utf-8') as f:
+    with open('../mapper.csv', 'w', encoding='utf-8') as f:
         f.write('index,thumbnail_image,music_preview,music_title,artist\n')
         for filtered_row in filtered_rows:
             # Convert the row to a list of values and join with commas
-            f.write(';'.join(map(str, filtered_row)) + '\n')
+            f.write(','.join(map(str, filtered_row)) + '\n')
 
 print("Filtered rows have been written to 'filtered_output.txt'.")
 for row in lost_rows:

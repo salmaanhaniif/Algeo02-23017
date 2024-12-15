@@ -50,17 +50,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload }) => {
         +
       </label>
 
-      {/* {extractedFiles.length > 0 && (
-        <div className="extracted-files">
-          <h3>Extracted Files:</h3>
-          <ul>
-            {extractedFiles.map((file, index) => (
-              <li key={index}>{file}</li>
-            ))}
-          </ul>
-        </div>
-      )} */}
-
       {error && <p className="error-message">{error}</p>}
     </div>
   );

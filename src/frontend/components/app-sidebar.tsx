@@ -15,8 +15,8 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Audio", url: "#", icon: Music },
-  { title: "Picture", url: "#", icon: Camera },
+  { title: "Audio", url: "/", icon: Music },
+  { title: "Picture", url: "/images", icon: Camera },
   { title: "Mapper", url: "#", icon: Map },
   { title: "Dataset", url: "#", icon: Database },
 ];

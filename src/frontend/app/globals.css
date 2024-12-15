@@ -86,3 +86,136 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.main-content {
+  padding: 1rem;
+}
+
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.file-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f0f0f0;
+  padding: 1rem;
+  border-radius: 8px;
+  color: #333;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.file-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+}
+
+.file-thumbnail {
+  width: 80px;
+  height: 80px;
+  background-color: #d9d9d9;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+.file-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.file-uploader {
+  position: relative;
+}
+
+.upload-button {
+  position: fixed;
+  bottom: 50px;
+  right: 50px;
+  background-color: #007bff;
+  color: white;
+  font-size: 30px;
+  width: 70px;
+  height: 70px;
+  padding: 20px;
+  border-radius: 30%;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-button:hover {
+  background-color: #0056b3;
+  transform: scale(1.1);
+}
+
+.upload-button:active {
+  background-color: #004085;
+  transform: scale(1);
+}
+
+.upload-button i {
+  font-size: 24px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 12px;
+  padding-bottom: 12px;
+}
+
+.pagination-button {
+  padding: 2px 10px;
+  margin: 0 4px;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  background-color: white;
+  color: #007bff;
+  font-size: 13px;
+  font-weight: bold;
+  transition: background-color 0.3s, transform 0.2s, border-color 0.3s;
+  cursor: pointer;
+}
+
+.pagination-button:hover {
+  background-color: #f0f0f0;
+  border-color: #0056b3;
+  transform: scale(1.05);
+}
+
+.pagination-button:disabled {
+  background-color: #e0e0e0;
+  color: #aaa;
+  cursor: pointer;
+  border-color: #ccc;
+}
+
+.pagination-button-active {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination-dots {
+  margin: 0 8px;
+  color: #007bff;
+  font-size: 18px;
+}

@@ -1,5 +1,6 @@
 import { writeFile } from "fs";
 import { join } from "path";
+import React from "react";
 
 export default function Upload() {
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {

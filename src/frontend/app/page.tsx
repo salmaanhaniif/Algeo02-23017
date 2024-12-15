@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,6 +9,18 @@ import Pagination from "@/components/pagination";
 interface AudioFile {
   fileName: string;
   url: string;
+=======
+import DragandDrop from "@/components/draganddrop";
+import Image from "next/image";
+
+export default function Home() {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center min-h-screen">
+      {/* <h1 className="text-2xl">Hello World!</h1> */}
+      <DragandDrop/>
+    </div>
+  );
+>>>>>>> abadc3f16c59868370cf831728c45a25d03187d3
 }
 
 const ITEMS_PER_PAGE = 28;

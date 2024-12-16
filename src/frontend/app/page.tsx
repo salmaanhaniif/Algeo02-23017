@@ -91,11 +91,11 @@ const MainPage = () => {
             mapperData={mapperData || []} // Pass mapperData to FileGrid
           />
 
-    <div>
+    {/* <div>
       <h1>My Next.js Page</h1>
       <button onClick={() => setIsPopUpOpen(true)}>Show Pop-Up</button>
       <Mapper isOpen={isPopUpOpen} onClose={() => setIsPopUpOpen(false)} />
-    </div>
+    </div> */}
 
       {/* Pop-up Audio Player */}
       

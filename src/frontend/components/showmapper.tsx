@@ -25,9 +25,9 @@ const Mapper: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch("/uploads/mappercoma.txt");
+      const response = await fetch("/uploads/mapper.txt");
       const text = await response.text();
-      const rows = text.split("\n").map((row) => row.split(","));
+      const rows = text.split("\n").map((row) => row.split("\uFFF9"));
       
       setHeaders(rows[0]); // Set headers dari baris pertama
       const data = rows.slice(1).map((row) => {

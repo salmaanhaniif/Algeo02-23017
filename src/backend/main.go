@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"image"
 	"io"
@@ -246,11 +247,20 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	queryProjected := utils.Proyeksi(U, queryStandar, 50)
 
 	distance := utils.HitungJarakParallel(projected, queryProjected, filenames)
+	var results []utils.DistanceIndex
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	for _, dist := range distance {
 		if dist.Distance == 0 {
-			fmt.Fprintf(w, "Similar file: %s\n", dist.FileName)
+			results = append(results, dist)
 		}
+	}
+	if len(results) > 0 {
+		for i := 0; i < len(results); i++ {
+			json.NewEncoder(w).Encode(results[i].FileName)
+		}
+	} else {
+		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found"})
 	}
 }
 

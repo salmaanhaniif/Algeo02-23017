@@ -123,8 +123,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (fileExtension === ".wav") {
           const audioFilePath = path.join(audioFolder, originalFileName);
           await fs.writeFile(audioFilePath, entry.getData());
-          const midiFilePath = path.join(midiFolder, originalFileName); //.replace(/\.wav$/, ".mid")
-          await convertWavToMidi(audioFilePath, midiFilePath);
+          // const midiFilePath = path.join(midiFolder, originalFileName); //.replace(/\.wav$/, ".mid")
+          // await convertWavToMidi(audioFilePath, midiFilePath);
         } else if (fileExtension === ".mid") {
           const audioFilePath = path.join(audioFolder, originalFileName);
           const midiFilePath = path.join(midiFolder, originalFileName);

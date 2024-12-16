@@ -11,7 +11,7 @@ UPLOAD_FOLDER = os.path.abspath('../frontend/public/uploads/audio')
 QUERY_FOLDER = os.path.abspath('../frontend/public/query/audio')
 TEMP_FOLDER = os.path.abspath('../frontend/public/query/temp')
 
-print(f"Expected files in {UPLOAD_FOLDER}: {os.listdir(UPLOAD_FOLDER)}")
+# print(f"Expected files in {UPLOAD_FOLDER}: {os.listdir(UPLOAD_FOLDER)}")
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(QUERY_FOLDER, exist_ok=True)

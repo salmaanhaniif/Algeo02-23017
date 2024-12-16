@@ -231,11 +231,16 @@ export default function Upload() {
               Array.isArray(searchResult) ? (
                 searchResult.map((result: any, index: number) => (
                   <div key={index} className="flex flex-col justify-center items-center mb-4">
-                  <img
-                    src={`/uploads/images/${result.filename}`} // Ensure the correct path for the image
-                    alt={result.filename}
-                    className="w-20 h-20 object-cover mb-2"  // mb-2 adds some margin below the image
-                  />
+                    { selectedOption === "Select Image" ? 
+                     <img
+                     src={`/uploads/images/${result.filename}`} // Ensure the correct path for the image
+                     alt={result.filename}
+                     className="w-20 h-20 object-cover mb-2"  // mb-2 adds some margin below the image
+                    />
+                    : 
+                    <span className="file-thumbnail text-4xl">🎵</span>
+                    }
+                 
                   <div className="text-center">
                     <p><strong>Filename:</strong> {result.filename}</p>
                     <p><strong>Similarity:</strong> {result.similarity}</p>

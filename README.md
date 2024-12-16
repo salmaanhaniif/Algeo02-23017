@@ -22,9 +22,10 @@ Mencari audio yang memiliki gambar album sama dengan query yang di-upload.
 ```sh
 git clone https://github.com/salmaanhaniif/Algeo02-23017
 ```
-2. Buka terminal lalu pindah ke direktori "Algeo02-23017\src\backend" dan jalankan file main.go
+2. Buka terminal lalu pindah ke direktori "Algeo02-23017\src\backend" dan jalankan file main.go dan audiosearch.py di dua terminal berbeda
 ```sh
 cd Algeo02-23017\src\backend
+py audiosearch.py
 go run main.go
 python audio.py
 ```

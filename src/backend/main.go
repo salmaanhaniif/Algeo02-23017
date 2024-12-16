@@ -22,6 +22,7 @@ import (
 	_ "image/png"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func loadEnv() {
@@ -190,7 +191,7 @@ func uploadCSVHandler(w http.ResponseWriter, r *http.Request) {
 }
 func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
-	file, header, err := r.FormFile("query")
+	file, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Failed to read query file", http.StatusBadRequest)
 		return
@@ -248,19 +249,26 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	distance := utils.HitungJarakParallel(projected, queryProjected, filenames)
 	var results []utils.DistanceIndex
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	for _, dist := range distance {
 		if dist.Distance == 0 {
 			results = append(results, dist)
 		}
 	}
-	if len(results) > 0 {
-		for i := 0; i < len(results); i++ {
-			json.NewEncoder(w).Encode(map[string]string{"message": "Similar file found", "filename": results[i].FileName})
-		}
+
+	// Prepare response JSON
+	response := make([]map[string]string, len(results))
+	if len(results) == 0 {
+		json.NewEncoder(w).Encode("No matches found.")
 	} else {
-		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found", "filename": ""})
+		for i, result := range results {
+			response[i] = map[string]string{
+				"filename":   result.FileName,
+				"similarity": fmt.Sprintf("%.2f", result.Similarity),
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}
 }
 
@@ -275,8 +283,14 @@ func main() {
 	// http.HandleFunc("/upload", uploadCSVHandler)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/image-search", querySearchHandler).Methods("POST")
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"}, // Hanya izinkan dari localhost:3000
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
+	handler := c.Handler(r)
 
 	// Start the server
 	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", handler)
 }

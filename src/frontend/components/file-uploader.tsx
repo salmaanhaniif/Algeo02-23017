@@ -40,11 +40,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload }) => {
   return (
     <div className="file-uploader">
       <input
-        type="file"
-        accept=".zip"
-        onChange={handleChange}
-        className="hidden"
-        id="file-upload"
+       type="file"
+       accept=".zip,.rar" // Accept both .zip and .rar
+       onChange={handleChange}
+       className="hidden"
+       id="file-upload"
       />
       <label htmlFor="file-upload" className="upload-button z-50">
         +

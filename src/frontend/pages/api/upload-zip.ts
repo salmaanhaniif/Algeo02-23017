@@ -2,13 +2,17 @@ import { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
+import { promisify } from "util";
 import AdmZip from "adm-zip";
+import { execFile } from "child_process";
 
 // Folder tujuan untuk menyimpan file WAV
 const uploadFolder = path.join(process.cwd(), "public", "uploads");
 
 const imageFolder = path.join(uploadFolder, "images");
 const audioFolder = path.join(uploadFolder, "audio");
+const midiFolder = path.join(uploadFolder, "audiomidi");
+const execFilePromise = promisify(execFile);
 
 const ensureFolderExists = async (folderPath: string) => {
   try {
@@ -20,6 +24,7 @@ const ensureFolderExists = async (folderPath: string) => {
 
 ensureFolderExists(imageFolder);
 ensureFolderExists(audioFolder);
+ensureFolderExists(midiFolder);
 
 // Konfigurasi Multer
 const storage = multer.diskStorage({
@@ -71,89 +76,81 @@ const deleteFolderContents = async (folderPath: string) => {
   }
 };
 
+
+async function convertWavToMidi(wavFile: string, midiFile: string) {
+  try {
+    const scriptPath = path.resolve(__dirname, "../../../../../backend/wavtomidi_database.py");
+    const { stdout, stderr } = await execFilePromise("python3", [scriptPath, wavFile, midiFile]);
+    // const { stdout, stderr } = await execFilePromise("python3", [
+    //   "Algeo02-23017\src\backend\wavtomidi_database.py",
+    //   wavFile,
+    //   midiFile,
+    // ]);
+    console.log("WAV to MIDI conversion successful:", stdout);
+    if (stderr) console.error("Warnings during WAV to MIDI:", stderr);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("Error converting WAV to MIDI:", error.message);
+    } else {
+      console.error("Error converting WAV to MIDI:", error);
+    }
+    throw error;
+  }
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      // Jalankan middleware Multer
       console.log("Starting file upload...");
       await runMiddleware(req, res, multerMiddleware);
       console.log("Multer middleware completed.");
+      console.log("File received:", (req as any).file);
 
-      // Path file ZIP yang diunggah
       const filePath = (req as any).file.path;
       console.log(`File uploaded successfully. File path: ${filePath}`);
 
-      // Ekstraksi file ZIP
       const zip = new AdmZip(filePath);
-      let clearAudioFolder = false;
-      let clearImageFolder = false;
-      let savedAudio = false;
-      let savedImage = false;
-
-      // Inspect the extracted files to determine what type of files they are
       const extractedFiles = zip.getEntries();
-      extractedFiles.forEach((entry) => {
+      console.log("Extracted files:", extractedFiles.map((entry) => entry.entryName));
+
+      // Process file extraction and save logic...
+      for (const entry of extractedFiles) {
         const fileExtension = path.extname(entry.entryName).toLowerCase();
-        if (fileExtension === ".wav" || fileExtension === ".midi") {
-          clearAudioFolder = true; // Set flag to clear audio folder
+        const originalFileName = path.basename(entry.entryName);
+
+        if (fileExtension === ".wav") {
+          const audioFilePath = path.join(audioFolder, originalFileName);
+          await fs.writeFile(audioFilePath, entry.getData());
+          const midiFilePath = path.join(midiFolder, originalFileName); //.replace(/\.wav$/, ".mid")
+          await convertWavToMidi(audioFilePath, midiFilePath);
+        } else if (fileExtension === ".mid") {
+          const audioFilePath = path.join(audioFolder, originalFileName);
+          const midiFilePath = path.join(midiFolder, originalFileName);
+          await fs.writeFile(audioFilePath, entry.getData());
+          await fs.writeFile(midiFilePath, entry.getData());
         } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-          clearImageFolder = true; // Set flag to clear image folder
-        }
-      });
-
-      // Clear only the relevant folder(s)
-      if (clearAudioFolder) {
-        await deleteFolderContents(audioFolder);
-        console.log("Cleared audio folder");
-      }
-      if (clearImageFolder) {
-        await deleteFolderContents(imageFolder);
-        console.log("Cleared image folder");
-      }
-
-      // Extract all files to the appropriate folder(s)
-      extractedFiles.forEach((entry) => {
-        const fileExtension = path.extname(entry.entryName).toLowerCase();
-        console.log("Processing file:", entry.entryName);
-
-        if (fileExtension === ".wav" || fileExtension === ".midi") {
-          savedAudio = true;
-          console.log("Saving audio file:", entry.entryName);
-          fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
-        } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-          savedImage = true;
-          console.log("Saving image file:", entry.entryName);
-          fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
+          await fs.writeFile(path.join(imageFolder, originalFileName), entry.getData());
         } else {
-          console.log("Unsupported file type in ZIP:", entry.entryName);
+          console.log(`Unsupported file type: ${entry.entryName}`);
         }
-      });
-
-      // Clean up the uploaded ZIP file
-      fs.unlink(filePath);
-
-      let message = "ZIP file uploaded and extracted successfully!";
-      if (savedAudio && savedImage) {
-        message += " Files were saved to both the audio and image folders.";
-      } else if (savedAudio) {
-        message += " Files were saved to the audio folder.";
-      } else if (savedImage) {
-        message += " Files were saved to the image folder.";
       }
 
-      // Process mapperData and extract required info
-      res.status(200).json({
-        message: message,
-      });
+      // Delete ZIP file after processing
+      await fs.unlink(filePath);
 
+      res.status(200).json({ message: "ZIP file uploaded and processed successfully!" });
     } catch (error) {
       console.error("Error handling ZIP file:", error);
-      res.status(500).json({ message: "Failed to process ZIP file." });
+      res.status(500).json({
+        message: "Failed to process ZIP file.",
+        error: (error instanceof Error) ? error.message : String(error),
+      });
     }
   } else {
     res.status(405).json({ message: "Method not allowed" });
   }
 }
+
 
 export const config = {
   api: {

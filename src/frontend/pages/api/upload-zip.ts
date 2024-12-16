@@ -3,6 +3,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import AdmZip from "adm-zip";
+const unrar: any = require('unrar.js');
+
 
 // Folder tujuan untuk menyimpan file WAV
 const uploadFolder = path.join(process.cwd(), "public", "uploads");
@@ -70,6 +72,37 @@ const deleteFolderContents = async (folderPath: string) => {
   }
 };
 
+const extractRarFile = async (filePath: string, destination: string) => {
+  try {
+    const buffer = await fs.readFile(filePath);
+    const unrarStream = unrar.createStream(buffer);
+
+    // Explicitly typing the files array
+    const files: any[] = [];
+
+    // Extract files from the RAR archive
+    unrarStream.on("file", (file: any) => {
+      files.push(file);
+    });
+
+    unrarStream.on("end", async () => {
+      for (const file of files) {
+        const filePath = path.join(destination, file.fileHeader.name);
+        await fs.writeFile(filePath, file.data);
+        console.log("Saved file:", file.fileHeader.name);
+      }
+    });
+
+    unrarStream.on("error", (error: Error) => {
+      console.error("Error extracting RAR file:", error);
+    });
+
+    unrarStream.end();
+  } catch (error) {
+    console.error("Error reading RAR file:", error);
+  }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
@@ -83,50 +116,124 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log(`File uploaded successfully. File path: ${filePath}`);
 
       // Ekstraksi file ZIP
-      const zip = new AdmZip(filePath);
+      const fileExtension = path.extname(filePath).toLowerCase();
       let clearAudioFolder = false;
       let clearImageFolder = false;
       let savedAudio = false;
       let savedImage = false;
 
       // Inspect the extracted files to determine what type of files they are
-      const extractedFiles = zip.getEntries();
-      extractedFiles.forEach((entry) => {
-        const fileExtension = path.extname(entry.entryName).toLowerCase();
-        if (fileExtension === ".wav" || fileExtension === ".midi") {
-          clearAudioFolder = true; // Set flag to clear audio folder
-        } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-          clearImageFolder = true; // Set flag to clear image folder
-        }
-      });
+      // const zip = new AdmZip(filePath);
+      // const extractedFiles = zip.getEntries();
+      // extractedFiles.forEach((entry) => {
+      //   const fileExtension = path.extname(entry.entryName).toLowerCase();
+      //   if (fileExtension === ".wav" || fileExtension === ".midi") {
+      //     clearAudioFolder = true; // Set flag to clear audio folder
+      //   } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
+      //     clearImageFolder = true; // Set flag to clear image folder
+      //   }
+      // });
 
-      // Clear only the relevant folder(s)
-      if (clearAudioFolder) {
-        await deleteFolderContents(audioFolder);
-        console.log("Cleared audio folder");
+      // // Clear only the relevant folder(s)
+      // if (clearAudioFolder) {
+      //   await deleteFolderContents(audioFolder);
+      //   console.log("Cleared audio folder");
+      // }
+      // if (clearImageFolder) {
+      //   await deleteFolderContents(imageFolder);
+      //   console.log("Cleared image folder");
+      // }
+
+      // // Extract all files to the appropriate folder(s)
+      // extractedFiles.forEach((entry) => {
+      //   const fileExtension = path.extname(entry.entryName).toLowerCase();
+      //   console.log("Processing file:", entry.entryName);
+
+      //   if (fileExtension === ".wav" || fileExtension === ".midi") {
+      //     savedAudio = true;
+      //     console.log("Saving audio file:", entry.entryName);
+      //     fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
+      //   } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
+      //     savedImage = true;
+      //     console.log("Saving image file:", entry.entryName);
+      //     fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
+      //   } else {
+      //     console.log("Unsupported file type in ZIP:", entry.entryName);
+      //   }
+      // });
+
+      if (fileExtension === ".zip") {
+        const zip = new AdmZip(filePath);
+        const extractedFiles = zip.getEntries();
+        extractedFiles.forEach((entry) => {
+          const ext = path.extname(entry.entryName).toLowerCase();
+          if (ext === ".wav" || ext === ".midi") {
+            clearAudioFolder = true; // Set flag to clear audio folder
+          } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
+            clearImageFolder = true; // Set flag to clear image folder
+          }
+        });
+
+        // Clear relevant folders if necessary
+        if (clearAudioFolder) await deleteFolderContents(audioFolder);
+        if (clearImageFolder) await deleteFolderContents(imageFolder);
+
+        // Extract the files from ZIP archive
+        extractedFiles.forEach((entry) => {
+          const ext = path.extname(entry.entryName).toLowerCase();
+          console.log("Processing file:", entry.entryName);
+
+          if (ext === ".wav" || ext === ".midi") {
+            savedAudio = true;
+            fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
+          } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
+            savedImage = true;
+            fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
+          }
+        });
       }
-      if (clearImageFolder) {
-        await deleteFolderContents(imageFolder);
-        console.log("Cleared image folder");
-      }
 
-      // Extract all files to the appropriate folder(s)
-      extractedFiles.forEach((entry) => {
-        const fileExtension = path.extname(entry.entryName).toLowerCase();
-        console.log("Processing file:", entry.entryName);
+      // Handle RAR file
+      // if (fileExtension === ".rar") {
+      //   let rarFiles: any[] = [];
 
-        if (fileExtension === ".wav" || fileExtension === ".midi") {
-          savedAudio = true;
-          console.log("Saving audio file:", entry.entryName);
-          fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
-        } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-          savedImage = true;
-          console.log("Saving image file:", entry.entryName);
-          fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
-        } else {
-          console.log("Unsupported file type in ZIP:", entry.entryName);
-        }
-      });
+      //   // Handle RAR file extraction using unrar.js
+      //   try {
+      //     const extracted = unrar(Buffer);
+      //     rarFiles = extracted.getFiles();
+      //   } catch (error) {
+      //     console.error("Error extracting RAR file:", error);
+      //   }
+
+      //   const hasAudio = rarFiles.some(file => ["wav", "midi"].includes(path.extname(file.name).toLowerCase()));
+      //   const hasImage = rarFiles.some(file => ["jpg", "jpeg", "png"].includes(path.extname(file.name).toLowerCase()));
+
+      //   // Clear the relevant folder based on the file types
+      //   if (hasAudio) {
+      //     clearAudioFolder = true;
+      //   }
+      //   if (hasImage) {
+      //     clearImageFolder = true;
+      //   }
+
+      //   // Clear the relevant folder(s)
+      //   if (clearAudioFolder) await deleteFolderContents(audioFolder);
+      //   if (clearImageFolder) await deleteFolderContents(imageFolder);
+
+      //   // Extract the files to the appropriate folder
+      //   rarFiles.forEach(async (file) => {
+      //     const ext = path.extname(file.fileHeader.name).toLowerCase();
+      //     console.log("Processing file:", file.fileHeader.name);
+
+      //     if (ext === ".wav" || ext === ".midi") {
+      //       savedAudio = true;
+      //       await fs.writeFile(path.join(audioFolder, file.fileHeader.name), file.data);
+      //     } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
+      //       savedImage = true;
+      //       await fs.writeFile(path.join(imageFolder, file.fileHeader.name), file.data);
+      //     }
+      //   });
+      // }
 
       // Clean up the uploaded ZIP file
       fs.unlink(filePath);

@@ -259,7 +259,6 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	response := make([]map[string]string, len(results))
 	for i, result := range results {
 		response[i] = map[string]string{
-			"message":  "Similar file found",
 			"filename": result.FileName,
 			"similarity": fmt.Sprintf("%.2f", result.Similarity),
 		}
@@ -267,7 +266,6 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	if len(response) == 0 {
 		response = append(response, map[string]string{
-			"message":  "No matching files found",
 			"filename": "",
 			"similarity": "",
 		})

@@ -249,20 +249,26 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	distance := utils.HitungJarakParallel(projected, queryProjected, filenames)
 	var results []utils.DistanceIndex
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	for _, dist := range distance {
 		if dist.Distance == 0 {
 			results = append(results, dist)
-			fmt.Printf("Similar file: %s, Similarity: %f\n", dist.FileName, dist.Similarity)
 		}
 	}
-	if len(results) > 0 {
-		for i := 0; i < len(results); i++ {
-			json.NewEncoder(w).Encode(map[string]string{"message": "Similar file found", "filename": results[i].FileName})
-		}
+
+	// Prepare response JSON
+	response := make([]map[string]string, len(results))
+	if len(results) == 0 {
+		json.NewEncoder(w).Encode("No matches found.")
 	} else {
-		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found", "filename": ""})
+		for i, result := range results {
+			response[i] = map[string]string{
+				"filename":   result.FileName,
+				"similarity": fmt.Sprintf("%.2f", result.Similarity),
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}
 }
 

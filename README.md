@@ -13,9 +13,9 @@ Proyek Sistem Temu Balik Suara dan Image Retrieval dengan PCA Berbasis Website
 
 ## Fitur
 * **Query by Humming** <br>
-Mencari lagu yang cocok berdasarkan dengungan.
+Mencari lagu yang sesuai dengan query pada database berdasarkan dengungan.  
 * **Image Retrieval dengan PCA** <br>
-Mencari foto yang sama menggunakan metode PCA.
+Mencari audio yang memiliki gambar album sama dengan query yang di-upload.
 
 ## Cara Menjalankan Program (Windows)
 1. Clone Repository 
@@ -26,6 +26,7 @@ git clone https://github.com/salmaanhaniif/Algeo02-23017
 ```sh
 cd Algeo02-23017\src\backend
 go run main.go
+python audio.py
 ```
 3. Pindah ke ke direktori "Algeo02-23017\src\frontend" dan jalankan command
 ```sh

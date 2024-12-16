@@ -2,8 +2,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
+import { promisify } from "util";
+import { execFile } from "child_process";
 import AdmZip from "adm-zip";
-const unrar: any = require('unrar.js');
 
 
 // Folder tujuan untuk menyimpan file WAV
@@ -11,6 +12,8 @@ const uploadFolder = path.join(process.cwd(), "public", "uploads");
 
 const imageFolder = path.join(uploadFolder, "images");
 const audioFolder = path.join(uploadFolder, "audio");
+const midiFolder = path.join(uploadFolder, "audiomidi");
+const execFilePromise = promisify(execFile);
 
 const ensureFolderExists = async (folderPath: string) => {
   try {
@@ -22,6 +25,7 @@ const ensureFolderExists = async (folderPath: string) => {
 
 ensureFolderExists(imageFolder);
 ensureFolderExists(audioFolder);
+ensureFolderExists(midiFolder);
 
 // Konfigurasi Multer
 const storage = multer.diskStorage({
@@ -73,194 +77,82 @@ const deleteFolderContents = async (folderPath: string) => {
   }
 };
 
-const extractRarFile = async (filePath: string, destination: string) => {
+
+async function convertWavToMidi(wavFile: string, midiFile: string) {
   try {
-    const buffer = await fs.readFile(filePath);
-    const unrarStream = unrar.createStream(buffer);
-
-    // Explicitly typing the files array
-    const files: any[] = [];
-
-    // Extract files from the RAR archive
-    unrarStream.on("file", (file: any) => {
-      files.push(file);
-    });
-
-    unrarStream.on("end", async () => {
-      for (const file of files) {
-        const filePath = path.join(destination, file.fileHeader.name);
-        await fs.writeFile(filePath, file.data);
-        console.log("Saved file:", file.fileHeader.name);
-      }
-    });
-
-    unrarStream.on("error", (error: Error) => {
-      console.error("Error extracting RAR file:", error);
-    });
-
-    unrarStream.end();
+    const scriptPath = path.resolve(__dirname, "../../../../../backend/wavtomidi_database.py");
+    const { stdout, stderr } = await execFilePromise("python3", [scriptPath, wavFile, midiFile]);
+    // const { stdout, stderr } = await execFilePromise("python3", [
+    //   "Algeo02-23017\src\backend\wavtomidi_database.py",
+    //   wavFile,
+    //   midiFile,
+    // ]);
+    console.log("WAV to MIDI conversion successful:", stdout);
+    if (stderr) console.error("Warnings during WAV to MIDI:", stderr);
   } catch (error) {
-    console.error("Error reading RAR file:", error);
+    if (error instanceof Error) {
+      console.error("Error converting WAV to MIDI:", error.message);
+    } else {
+      console.error("Error converting WAV to MIDI:", error);
+    }
+    throw error;
   }
-};
+}
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     try {
-      // Jalankan middleware Multer
       console.log("Starting file upload...");
       await runMiddleware(req, res, multerMiddleware);
       console.log("Multer middleware completed.");
+      console.log("File received:", (req as any).file);
 
-      // Path file ZIP yang diunggah
       const filePath = (req as any).file.path;
       console.log(`File uploaded successfully. File path: ${filePath}`);
 
-      // Ekstraksi file ZIP
-      const fileExtension = path.extname(filePath).toLowerCase();
-      let clearAudioFolder = false;
-      let clearImageFolder = false;
-      let savedAudio = false;
-      let savedImage = false;
+      const zip = new AdmZip(filePath);
+      const extractedFiles = zip.getEntries();
+      console.log("Extracted files:", extractedFiles.map((entry) => entry.entryName));
 
-      // Inspect the extracted files to determine what type of files they are
-      // const zip = new AdmZip(filePath);
-      // const extractedFiles = zip.getEntries();
-      // extractedFiles.forEach((entry) => {
-      //   const fileExtension = path.extname(entry.entryName).toLowerCase();
-      //   if (fileExtension === ".wav" || fileExtension === ".midi") {
-      //     clearAudioFolder = true; // Set flag to clear audio folder
-      //   } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-      //     clearImageFolder = true; // Set flag to clear image folder
-      //   }
-      // });
+      // Process file extraction and save logic...
+      for (const entry of extractedFiles) {
+        const fileExtension = path.extname(entry.entryName).toLowerCase();
+        const originalFileName = path.basename(entry.entryName);
 
-      // // Clear only the relevant folder(s)
-      // if (clearAudioFolder) {
-      //   await deleteFolderContents(audioFolder);
-      //   console.log("Cleared audio folder");
-      // }
-      // if (clearImageFolder) {
-      //   await deleteFolderContents(imageFolder);
-      //   console.log("Cleared image folder");
-      // }
-
-      // // Extract all files to the appropriate folder(s)
-      // extractedFiles.forEach((entry) => {
-      //   const fileExtension = path.extname(entry.entryName).toLowerCase();
-      //   console.log("Processing file:", entry.entryName);
-
-      //   if (fileExtension === ".wav" || fileExtension === ".midi") {
-      //     savedAudio = true;
-      //     console.log("Saving audio file:", entry.entryName);
-      //     fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
-      //   } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
-      //     savedImage = true;
-      //     console.log("Saving image file:", entry.entryName);
-      //     fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
-      //   } else {
-      //     console.log("Unsupported file type in ZIP:", entry.entryName);
-      //   }
-      // });
-
-      if (fileExtension === ".zip") {
-        const zip = new AdmZip(filePath);
-        const extractedFiles = zip.getEntries();
-        extractedFiles.forEach((entry) => {
-          const ext = path.extname(entry.entryName).toLowerCase();
-          if (ext === ".wav" || ext === ".midi") {
-            clearAudioFolder = true; // Set flag to clear audio folder
-          } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
-            clearImageFolder = true; // Set flag to clear image folder
-          }
-        });
-
-        // Clear relevant folders if necessary
-        if (clearAudioFolder) await deleteFolderContents(audioFolder);
-        if (clearImageFolder) await deleteFolderContents(imageFolder);
-
-        // Extract the files from ZIP archive
-        extractedFiles.forEach((entry) => {
-          const ext = path.extname(entry.entryName).toLowerCase();
-          console.log("Processing file:", entry.entryName);
-
-          if (ext === ".wav" || ext === ".midi") {
-            savedAudio = true;
-            fs.writeFile(path.join(audioFolder, entry.entryName), entry.getData());
-          } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
-            savedImage = true;
-            fs.writeFile(path.join(imageFolder, entry.entryName), entry.getData());
-          }
-        });
+        if (fileExtension === ".wav") {
+          const audioFilePath = path.join(audioFolder, originalFileName);
+          await fs.writeFile(audioFilePath, entry.getData());
+          // const midiFilePath = path.join(midiFolder, originalFileName); //.replace(/\.wav$/, ".mid")
+          // await convertWavToMidi(audioFilePath, midiFilePath);
+        } else if (fileExtension === ".mid") {
+          const audioFilePath = path.join(audioFolder, originalFileName);
+          const midiFilePath = path.join(midiFolder, originalFileName);
+          await fs.writeFile(audioFilePath, entry.getData());
+          await fs.writeFile(midiFilePath, entry.getData());
+        } else if (fileExtension === ".jpg" || fileExtension === ".jpeg" || fileExtension === ".png") {
+          await fs.writeFile(path.join(imageFolder, originalFileName), entry.getData());
+        } else {
+          console.log(`Unsupported file type: ${entry.entryName}`);
+        }
       }
 
-      // Handle RAR file
-      // if (fileExtension === ".rar") {
-      //   let rarFiles: any[] = [];
+      // Delete ZIP file after processing
+      await fs.unlink(filePath);
 
-      //   // Handle RAR file extraction using unrar.js
-      //   try {
-      //     const extracted = unrar(Buffer);
-      //     rarFiles = extracted.getFiles();
-      //   } catch (error) {
-      //     console.error("Error extracting RAR file:", error);
-      //   }
-
-      //   const hasAudio = rarFiles.some(file => ["wav", "midi"].includes(path.extname(file.name).toLowerCase()));
-      //   const hasImage = rarFiles.some(file => ["jpg", "jpeg", "png"].includes(path.extname(file.name).toLowerCase()));
-
-      //   // Clear the relevant folder based on the file types
-      //   if (hasAudio) {
-      //     clearAudioFolder = true;
-      //   }
-      //   if (hasImage) {
-      //     clearImageFolder = true;
-      //   }
-
-      //   // Clear the relevant folder(s)
-      //   if (clearAudioFolder) await deleteFolderContents(audioFolder);
-      //   if (clearImageFolder) await deleteFolderContents(imageFolder);
-
-      //   // Extract the files to the appropriate folder
-      //   rarFiles.forEach(async (file) => {
-      //     const ext = path.extname(file.fileHeader.name).toLowerCase();
-      //     console.log("Processing file:", file.fileHeader.name);
-
-      //     if (ext === ".wav" || ext === ".midi") {
-      //       savedAudio = true;
-      //       await fs.writeFile(path.join(audioFolder, file.fileHeader.name), file.data);
-      //     } else if (ext === ".jpg" || ext === ".jpeg" || ext === ".png") {
-      //       savedImage = true;
-      //       await fs.writeFile(path.join(imageFolder, file.fileHeader.name), file.data);
-      //     }
-      //   });
-      // }
-
-      // Clean up the uploaded ZIP file
-      fs.unlink(filePath);
-
-      let message = "ZIP file uploaded and extracted successfully!";
-      if (savedAudio && savedImage) {
-        message += " Files were saved to both the audio and image folders.";
-      } else if (savedAudio) {
-        message += " Files were saved to the audio folder.";
-      } else if (savedImage) {
-        message += " Files were saved to the image folder.";
-      }
-
-      // Process mapperData and extract required info
-      res.status(200).json({
-        message: message,
-      });
-
+      res.status(200).json({ message: "ZIP file uploaded and processed successfully!" });
     } catch (error) {
       console.error("Error handling ZIP file:", error);
-      res.status(500).json({ message: "Failed to process ZIP file." });
+      res.status(500).json({
+        message: "Failed to process ZIP file.",
+        error: (error instanceof Error) ? error.message : String(error),
+      });
     }
   } else {
     res.status(405).json({ message: "Method not allowed" });
   }
 }
+
 
 export const config = {
   api: {

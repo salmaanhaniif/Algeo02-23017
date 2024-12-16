@@ -227,7 +227,7 @@ def compare_similarity(folder_path, query_file):
         # Menghitung cosine similarity antar ATB query dan midi file
         avg = 0
         for i in range(len(query_atb)):
-            if cosine_similarity(query_atb[i], data_atb[0]) > 0.55:
+            if cosine_similarity(query_atb[i], data_atb[0]) > 0.8:
                 tempavg = 0;
                 tempctr = 0;
                 for j in range(0, len(data_atb)) :
@@ -244,7 +244,7 @@ def compare_similarity(folder_path, query_file):
         avg2 = 0
 
         for i in range(len(query_rtb)):
-            if cosine_similarity(query_rtb[i], data_rtb[0]) > 0.55:
+            if cosine_similarity(query_rtb[i], data_rtb[0]) > 0.8:
                 tempavg = 0;
                 tempctr = 0;
                 for j in range(0, len(data_rtb)) :
@@ -257,7 +257,7 @@ def compare_similarity(folder_path, query_file):
                 if tempavg>avg1 :
                     avg1 = tempavg
 
-            if cosine_similarity(query_ftb[i], data_ftb[0]) > 0.55:
+            if cosine_similarity(query_ftb[i], data_ftb[0]) > 0.8:
                 tempavg = 0;
                 tempctr = 0;
                 for j in range(0, len(data_ftb)) :
@@ -274,15 +274,21 @@ def compare_similarity(folder_path, query_file):
         final_similarity = (0.5 * avg + 0.3 * avg1 + 0.2 * avg2)
         similarity_percent = final_similarity * 100
 
-        if similarity_percent > 80:
+        if similarity_percent > 90:
             similarityq.append([similarity_percent, midi_file])
+
     similarityq = sorted(similarityq, key=lambda x: x[0], reverse=True)
+    for sim in similarityq:
+        sim[0] = str(sim[0].round(2)) + "%"  
+
     return similarityq
 
-def main():
-    similarity = compare_similarity("Audio", apalah)
-    sorted_similarities = sorted(similarity, key=lambda x: x[0], reverse=True)
+# def main():
+    # similarity = compare_similarity("Algeo02-23017\src\frontend\public\uploads\audio", "pirate.mid")
+    # print(similarity)
     # print("Nilai similaritas tertinggi: ",sorted_similarities[0][0])
     # print("Nama file: ", sorted_similarities[0][1])
     # melody = extract_melody("Audio/x (26).mid",0)
     # print(melody)
+
+# main()

@@ -2,93 +2,81 @@
 
 import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
+<<<<<<< HEAD
+import FileGridAudio from "@/components/file-grid-audio";
+import Notification from "@/components/notification";
+=======
 import FileGrid from "@/components/file-grid";
 import Pagination from "@/components/pagination";
 import Mapper from "../components/showmapper";
+>>>>>>> 249deada3583811fd71b7678d9b5b37c86100c2d
 
-interface AudioFile {
+interface FileData {
   fileName: string;
   url: string;
 }
 
-const ITEMS_PER_PAGE = 28;
-
 const MainPage = () => {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
-  const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [mapperData, setMapperData] = useState<any | null>(null);
+  const [notification, setNotification] = useState({
+    message: "",
+    type: "success" as "success" | "error",
+    visible: false,
+  });
 
   // Fungsi untuk mengunggah file ZIP dan memproses file WAV
   const handleZipUpload = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-
+  
     try {
       const response = await fetch("/api/upload-zip", {
         method: "POST",
         body: formData,
       });
-
-      if (!response.ok) {
-        const errorMessage = await response.text();
-        setErrorMessage(`Upload failed: ${errorMessage}`);
-        return;
-      }
-
-      const result = await response.json();
-      const extractedFiles = result.extractedFiles || [];
-
-      if (extractedFiles.length === 0) {
-        setErrorMessage("No valid WAV files found in the ZIP.");
-        return;
-      }
-
-      // Tambahkan file WAV ke audioFiles
-      const newAudioFiles = extractedFiles.map((fileName: string) => ({
-        fileName,
-        url: `/uploads/${fileName}`, // Path ke file hasil ekstraksi
-      }));
-
-      setAudioFiles((prev) => [...prev, ...newAudioFiles]);
-      setErrorMessage(null); // Reset error jika berhasil
+      
+      const data = await response.json();
+      setNotification({
+        message: data.message,
+        type: "success", // Assuming success here, can be adjusted as needed.
+        visible: true,
+      });
+  
+      // Wait for a short duration before reloading the page
+      setTimeout(() => {
+        window.location.reload(); // Reload page after showing the notification
+      }, 3000);
     } catch (error) {
-      console.error("Error uploading ZIP file:", error);
-      setErrorMessage("An unexpected error occurred during upload.");
+      setNotification({
+        message: "Failed to upload ZIP file.",
+        type: "error",
+        visible: true,
+      });
     }
   };
 
-  // Fungsi untuk Play Audio
-  const handlePlay = (audioFile: AudioFile) => {
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.currentTime = 0;
+  const loadMapper = async () => {
+    try {
+      const response = await fetch("/api/get-mapper");
+      if (response.ok) {
+        const data = await response.json();
+        setMapperData(data); // Update the state with the mapper data
+      } else {
+        setMapperData([]); // If the mapper is not found, set an empty array
+        setErrorMessage("Mapper data not found.");
+      }
+    } catch (error) {
+      console.error("Error loading mapper data:", error);
+      setMapperData([]); // Set to an empty array on error
+      setErrorMessage("An unexpected error occurred while loading mapper data.");
     }
-    const audio = new Audio(audioFile.url);
-    audio.play();
-    setCurrentAudio(audio);
-    setIsPopupVisible(true);
   };
 
-  // Fungsi untuk Pause dan Close Audio
-  const handleClosePopup = () => {
-    currentAudio?.pause();
-    setCurrentAudio(null);
-    setIsPopupVisible(false);
-  };
-
-  // Cleanup saat unmount
+  // Fetch the mapper data when the page is loaded
   useEffect(() => {
-    return () => {
-      currentAudio?.pause();
-    };
-  }, [currentAudio]);
-
-  // Pagination
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = startIndex + ITEMS_PER_PAGE;
-  const displayedFiles = audioFiles.slice(startIndex, endIndex);
+    loadMapper();
+  }, []);
 
   const [isPopUpOpen, setIsPopUpOpen] = useState(false);
 
@@ -96,23 +84,17 @@ const MainPage = () => {
     <main className="main-content">
       <section className="file-uploader-section mb-4">
         <FileUploader onUpload={handleZipUpload} />
-        {errorMessage && (
-          <p className="text-red-500 mt-2">{errorMessage}</p>
-        )}
+        <Notification
+        message={notification.message}
+        type={notification.type}
+        visible={notification.visible}
+      />
       </section>
 
       {/* Komponen FileGrid */}
-      <FileGrid files={displayedFiles} onPlay={handlePlay} />
-
-      {/* Pagination */}
-      {audioFiles.length > ITEMS_PER_PAGE && (
-        <Pagination
-          page={currentPage}
-          total={audioFiles.length}
-          limit={ITEMS_PER_PAGE}
-          onPageChange={(page) => setCurrentPage(page)}
-        />
-      )}
+      <FileGridAudio
+            mapperData={mapperData || []} // Pass mapperData to FileGrid
+          />
 
     <div>
       <h1>My Next.js Page</h1>
@@ -121,19 +103,7 @@ const MainPage = () => {
     </div>
 
       {/* Pop-up Audio Player */}
-      {isPopupVisible && currentAudio && (
-        <div className="popup fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="popup-content bg-white p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl font-bold mb-4">Audio Player</h2>
-            <button
-              className="close-button bg-red-500 text-white px-4 py-2 rounded w-full"
-              onClick={handleClosePopup}
-            >
-              ✖ Close
-            </button>
-          </div>
-        </div>
-      )}
+      
     </main>
   );
 };

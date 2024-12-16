@@ -15,8 +15,14 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "csv-parse": "^5.6.0",
+    "formidable": "^3.5.2",
+    "fs": "^0.0.1-security",
     "lucide-react": "^0.462.0",
+<<<<<<< HEAD
+=======
 
+>>>>>>> 249deada3583811fd71b7678d9b5b37c86100c2d
     "next": "15.0.3",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",

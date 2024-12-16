@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
 import FileGridAudio from "@/components/file-grid-audio";
 import Notification from "@/components/notification";
+import Mapper from "../components/showmapper";
 
 interface FileData {
   fileName: string;
@@ -72,6 +73,8 @@ const MainPage = () => {
     loadMapper();
   }, []);
 
+  const [isPopUpOpen, setIsPopUpOpen] = useState(false);
+
   return (
     <main className="main-content">
       <section className="file-uploader-section mb-4">
@@ -87,6 +90,12 @@ const MainPage = () => {
       <FileGridAudio
             mapperData={mapperData || []} // Pass mapperData to FileGrid
           />
+
+    <div>
+      <h1>My Next.js Page</h1>
+      <button onClick={() => setIsPopUpOpen(true)}>Show Pop-Up</button>
+      <Mapper isOpen={isPopUpOpen} onClose={() => setIsPopUpOpen(false)} />
+    </div>
 
       {/* Pop-up Audio Player */}
       

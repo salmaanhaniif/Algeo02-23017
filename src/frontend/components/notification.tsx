@@ -20,7 +20,7 @@ const Notification: React.FC<NotificationProps> = ({ message, type, visible }) =
 
   return (
     <div
-      className={`fixed top-5 left-1/2 transform -translate-x-1/2 p-4 rounded-md ${
+      className={`fixed top-5 left-1/2 transform -translate-x-1/2 z-50 p-4 rounded-md ${
         fade ? "opacity-100" : "opacity-0"
       } transition-opacity duration-500 ${
         type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"

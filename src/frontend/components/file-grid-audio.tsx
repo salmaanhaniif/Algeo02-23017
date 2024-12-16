@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Pagination from "@/components/pagination";
+import { title } from "process";
 
 interface FileData {
   fileName: string;
@@ -110,7 +111,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
           const mapperEntry = mapperData.find((file) => file.audio === audioFile);
 
           const imageUrl =
-            mapperEntry && imageExists[mapperEntry.image]
+            mapperEntry 
               ? `${imageDirectory}/${mapperEntry.image}`
               : "🎵"; // Default icon if image is not found
 
@@ -120,13 +121,13 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
           const audioUrl = `${audioDirectory}/${audioFile}`;
 
           return (
-            <div className="file-card p-4 bg-gray-100 rounded shadow" key={index}>
-              <div className="file-thumbnail text-4xl text-blue-500 mb-2">
+            <div className="file-card bg-gray-100 rounded shadow" key={index}>
+              <div className="file-thumbnail text-blue-500">
                 {imageUrl !== "🎵" ? (
                   <img
                     src={imageUrl}
-                    alt={title}
-                    className="w-16 h-16 object-cover"
+                    alt="🎵"
+                    className=""
                   />
                 ) : (
                   <span>{imageUrl}</span>
@@ -149,7 +150,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
       {isPopupVisible && currentAudio && (
         <div className="popup fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="popup-content bg-white p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl font-bold mb-4">Audio Player</h2>
+            <h2 className="text-xl font-bold mb-4">{title}</h2>
             <button
               className="close-button bg-red-500 text-white px-4 py-2 rounded w-full"
               onClick={handleClosePopup}

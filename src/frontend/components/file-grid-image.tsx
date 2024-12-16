@@ -84,16 +84,16 @@ const FileGridImage: React.FC<FileGridProps> = ({ mapperData = [] }) => {
           const imageExistsFlag = imageExists[imageFile];
 
           return (
-            <div className="file-card p-4 bg-gray-100 rounded shadow" key={index}>
-              <div className="file-thumbnail text-blue-500 mb-2">
+            <div className="file-card bg-white rounded shadow" key={index}>
+              <div className="text-blue-500">  
                 {imageExistsFlag ? (
                   <img
                     src={imageUrlPath}
                     alt={title}
-                    className="w-16 h-16 text-sm object-cover"
+                    className="text-sm h-32"
                   />
                 ) : (
-                  <span>🎨</span> // Show fallback icon if image doesn't exist
+                  <span className="file-thumbnail">🎨</span> // Show fallback icon if image doesn't exist
                 )}
               </div>
               <p className="file-name text-sm text-gray-800 truncate">{title}</p>

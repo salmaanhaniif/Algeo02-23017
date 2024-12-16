@@ -257,10 +257,10 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(results) > 0 {
 		for i := 0; i < len(results); i++ {
-			json.NewEncoder(w).Encode(results[i].FileName)
+			json.NewEncoder(w).Encode(map[string]string{"message": "Similar file found", "filename": results[i].FileName})
 		}
 	} else {
-		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found"})
+		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found", "filename": ""})
 	}
 }
 

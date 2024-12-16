@@ -1,4 +1,4 @@
-# Algeo01-23017
+# Algeo02-23017
 Tugas Besar 2 IF2123 Aljabar Linier dan Geometri Sistem Persamaan Linier, Determinan, dan Aplikasinya Semester I Tahun 2024/2025
 
 ## Deskripsi Umum

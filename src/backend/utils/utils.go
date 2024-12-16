@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync"
 
 	"gonum.org/v1/gonum/mat"
@@ -258,7 +259,9 @@ func LoadImagesFromFolder(folderPath string) ([][]uint8, []string, error) {
 			fmt.Printf("Berhasil memproses gambar %s\n", path)
 			mu.Lock()
 			vectors = append(vectors, vector)
-			filenames = append(filenames, path)
+			parts := strings.Split(path, string(filepath.Separator))
+			name := parts[len(parts)-1]
+			filenames = append(filenames, name)
 			mu.Unlock()
 		}(path)
 

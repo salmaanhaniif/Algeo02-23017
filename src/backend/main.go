@@ -266,15 +266,15 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 
 const (
 	uploadDir = "../frontend/public/uploads"
-	queryDir  = "../frontend/public/query"
+	queryDir  = "../frontend/public/query/image"
 )
 
 func main() {
 	//loadEnv()
 	// Set up the HTTP server and routes
-	http.HandleFunc("/upload", uploadCSVHandler)
+	// http.HandleFunc("/upload", uploadCSVHandler)
 	r := mux.NewRouter()
-	r.HandleFunc("/search", querySearchHandler).Methods("POST")
+	r.HandleFunc("/api/image-search", querySearchHandler).Methods("POST")
 
 	// Start the server
 	fmt.Println("Server started at :8080")

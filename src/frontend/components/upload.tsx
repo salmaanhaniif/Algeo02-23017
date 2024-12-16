@@ -8,6 +8,7 @@ export default function Upload() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const [audioURL, setAudioURL] = useState<string | null>(null);
+  const [searchResult, setSearchResult] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -64,6 +65,20 @@ export default function Upload() {
 
       if (response.ok) {
         console.log("File uploaded successfully");
+        const querySearchResponse = await fetch("http://localhost:8080/api/image-search", {
+          method: "POST",
+          body: formData,
+        });
+        if (querySearchResponse.ok) {
+          const result = await querySearchResponse.json();
+          // Hanya tampilkan nama file yang ditemukan
+          if (result) {
+            console.log("File found:", result);
+            setSearchResult(result);
+          } else {
+            setSearchResult("No matching files found.");
+          }
+        }
       } else {
         console.error("File upload failed");
       }

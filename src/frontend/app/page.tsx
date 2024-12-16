@@ -2,14 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
-<<<<<<< HEAD
 import FileGridAudio from "@/components/file-grid-audio";
 import Notification from "@/components/notification";
-=======
 import FileGrid from "@/components/file-grid";
 import Pagination from "@/components/pagination";
 import Mapper from "../components/showmapper";
->>>>>>> 249deada3583811fd71b7678d9b5b37c86100c2d
 
 interface FileData {
   fileName: string;
@@ -96,11 +93,11 @@ const MainPage = () => {
             mapperData={mapperData || []} // Pass mapperData to FileGrid
           />
 
-    <div>
+    {/* <div>
       <h1>My Next.js Page</h1>
       <button onClick={() => setIsPopUpOpen(true)}>Show Pop-Up</button>
       <Mapper isOpen={isPopUpOpen} onClose={() => setIsPopUpOpen(false)} />
-    </div>
+    </div> */}
 
       {/* Pop-up Audio Player */}
       

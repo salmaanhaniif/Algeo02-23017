@@ -13,6 +13,7 @@ interface FileGridProps {
   mapperData: MapperData[];
 }
 
+
 const ITEMS_PER_PAGE = 32;
 
 const FileGridImage: React.FC<FileGridProps> = ({ mapperData = [] }) => {

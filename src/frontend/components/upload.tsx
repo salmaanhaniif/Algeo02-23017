@@ -6,6 +6,7 @@ export default function Upload() {
   const [selectedOption, setSelectedOption] = useState<string>('Select Image');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const [audioURL, setAudioURL] = useState<string | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,6 +38,7 @@ export default function Upload() {
     setSelectedOption(e.target.value);
     setSelectedFile(null); // Clear the selected file when the dropdown option changes
     setImagePreview(null);
+
     setAudioURL(null);
   };
 
@@ -86,10 +88,12 @@ export default function Upload() {
     if (audio) {
       audio.play(); // Start playing the audio
     }
+    return "";
   };
 
   return (
     <main>
+
     <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center gap-3">
         {/* Dropdown to select file type */}
         <div className="flex justify-center items-center">
@@ -133,8 +137,6 @@ export default function Upload() {
         <div className="flex justify-center items-center mt-2 text-sm text-center text-gray-600 max-w-[150px] break-words whitespace-normal">
           {selectedFile ? selectedFile.name : "No file selected"}
         </div>
-
-
 
         {/* Choose File button */}
         <div className="flex text-center justify-center items-center">

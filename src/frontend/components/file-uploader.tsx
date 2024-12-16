@@ -46,7 +46,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload }) => {
         className="hidden"
         id="file-upload"
       />
-      <label htmlFor="file-upload" className="upload-button">
+      <label htmlFor="file-upload" className="upload-button z-50">
         +
       </label>
 

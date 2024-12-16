@@ -19,7 +19,7 @@ interface FileGridProps {
   mapperData: MapperData[];
 }
 
-const ITEMS_PER_PAGE = 28;
+const ITEMS_PER_PAGE = 32;
 
 const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
@@ -27,6 +27,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const [audioFiles, setAudioFiles] = useState<string[]>([]); // List of audio files
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
   const [totalPages, setTotalPages] = useState(1); // Total pages for pagination
+  const [currentAudioFileName, setCurrentAudioFileName] = useState<string | null>(null);
   const audioDirectory = "uploads/audio"; // Path to audio directory
   const imageDirectory = "uploads/images"; // Path to image directory
   const [imageExists, setImageExists] = useState<Record<string, boolean>>({});
@@ -71,6 +72,9 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
     const audio = new Audio(audioFile.url);
     audio.play();
     setCurrentAudio(audio);
+
+    setCurrentAudioFileName(audioFile.fileName); 
+
     setIsPopupVisible(true);
   };
 
@@ -78,6 +82,8 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const handleClosePopup = () => {
     currentAudio?.pause();
     setCurrentAudio(null);
+
+    setCurrentAudioFileName(null); 
     setIsPopupVisible(false);
   };
 
@@ -134,7 +140,8 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
                 )}
               </div>
               <p className="file-name text-sm text-gray-800 truncate">{title}</p>
-              {artist && <p className="text-xs text-gray-500">{artist}</p>}
+
+              {artist && <p className="text-center text-xs text-gray-500">{artist}</p>}
               <button
                 className="play-button bg-blue-500 text-white px-2 py-1 mt-2 rounded"
                 onClick={() => handlePlay({ fileName: audioFile, url: audioUrl })}
@@ -150,9 +157,34 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
       {isPopupVisible && currentAudio && (
         <div className="popup fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="popup-content bg-white p-6 rounded shadow-lg w-80">
-            <h2 className="text-xl font-bold mb-4">{title}</h2>
+
+            {(() => {
+              const mapperEntry = mapperData.find((file) => file.audio === currentAudioFileName);
+              const title = mapperEntry?.title || "No Title"; // Get the title or default to "No Title"
+              const imageUrl = mapperEntry ? `${imageDirectory}/${mapperEntry.image}` : null;
+              const artist = mapperEntry? mapperEntry.artist : null;
+
+              return (
+                <div className="popup-content-wrapper">
+    
+                {/* Display Image (if available) */}
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={title}
+                    className="popup-image mx-auto mb-4 w-32 h-32 object-cover rounded"
+                  />
+                ) : (
+                  <span className="file-thumbnail">🎵</span>
+                )}
+                {/* Display Title */}
+                <h2 className="text-xl font-bold text-center">{title}</h2>
+                {artist && <p className="text-sm text-gray-500 text-center">{artist}</p>}
+              </div>
+              );
+            })()}
             <button
-              className="close-button bg-red-500 text-white px-4 py-2 rounded w-full"
+              className="close-button bg-red-500 text-white px-4 py-2 rounded w-full mt-4"
               onClick={handleClosePopup}
             >
               ✖ Close
@@ -173,5 +205,6 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
     </section>
   );
 };
+
 
 export default FileGridAudio;

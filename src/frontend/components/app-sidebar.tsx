@@ -1,4 +1,5 @@
 "use client";
+"use client";
 import Upload from "./upload";
 import Mapper from "./showmapper";
 import React, { useState, useEffect } from "react";
@@ -29,6 +30,12 @@ const AppSidebar = () => {
     <Sidebar>
       <SidebarContent>
         <div className="absolute top-10 ml-10">
+          <SidebarGroup>
+            <SidebarGroupLabel></SidebarGroupLabel>
+            <SidebarGroupContent>
+              <Upload />
+            </SidebarGroupContent>
+          </SidebarGroup>
           <SidebarGroup>
             <SidebarGroupLabel></SidebarGroupLabel>
             <SidebarGroupContent>
@@ -71,11 +78,26 @@ const AppSidebar = () => {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          <SidebarGroup>
+            <SidebarGroupLabel></SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {items.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild className="justify-center mt-5">
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </div>
       </SidebarContent>
       <SidebarFooter>{/* Empty Footer */}</SidebarFooter>
-
-      {/* Move the Mapper component outside SidebarMenuButton */}
       <Mapper isOpen={isPopUpOpen} onClose={() => setIsPopUpOpen(false)} />
     </Sidebar>
   );

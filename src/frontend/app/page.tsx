@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
 import FileGridAudio from "@/components/file-grid-audio";
 import Notification from "@/components/notification";
+import FileGrid from "@/components/file-grid";
+import Pagination from "@/components/pagination";
 import Mapper from "../components/showmapper";
 
 interface FileData {

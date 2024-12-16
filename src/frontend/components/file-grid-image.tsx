@@ -13,7 +13,8 @@ interface FileGridProps {
   mapperData: MapperData[];
 }
 
-const ITEMS_PER_PAGE = 28;
+
+const ITEMS_PER_PAGE = 32;
 
 const FileGridImage: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const [imageFiles, setImageFiles] = useState<string[]>([]); // List of image files

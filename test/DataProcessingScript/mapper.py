@@ -2,6 +2,7 @@ import pandas as pd
 import re
 
 df = pd.read_csv('../MusicInfo.csv', encoding='utf-8')
+df = pd.read_csv('../MusicInfo.csv', encoding='utf-8')
 # Define the clean_filename function
 def clean_filename(filename):
     invalid_chars = r'[<>:"/\\|?*\x00-\x1f]'  

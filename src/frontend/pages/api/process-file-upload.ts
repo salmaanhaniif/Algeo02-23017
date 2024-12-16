@@ -55,13 +55,13 @@ const multerMiddleware = upload.single("file");
 // Function to run middleware
 function runMiddleware(req: NextApiRequest, res: NextApiResponse, fn: any) {
   return new Promise((resolve, reject) => {
-    console.log("Running middleware...");
+    // console.log("Running middleware...");
     fn(req, res, (result: any) => {
       if (result instanceof Error) {
-        console.error("Error in Multer middleware:", result);
+        // console.error("Error in Multer middleware:", result);
         return reject(result);
       }
-      console.log("Multer middleware completed.");
+      // console.log("Multer middleware completed.");
       return resolve(result);
     });
   });

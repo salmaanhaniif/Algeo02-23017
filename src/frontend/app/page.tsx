@@ -4,8 +4,11 @@ import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
 import FileGridAudio from "@/components/file-grid-audio";
 import Notification from "@/components/notification";
-import Pagination from "@/components/pagination";
-import Mapper from "../components/showmapper";
+
+interface FileData {
+  fileName: string;
+  url: string;
+}
 
 const MainPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

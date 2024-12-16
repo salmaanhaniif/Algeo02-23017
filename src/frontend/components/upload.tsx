@@ -1,12 +1,16 @@
 import { writeFile } from "fs";
 import { join } from "path";
 import React, { useState } from "react";
+import { useRouter } from "next/compat/router";
 
 export default function Upload() {
+  const router = useRouter(); 
   const [selectedOption, setSelectedOption] = useState<string>('Select Image');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const [audioURL, setAudioURL] = useState<string | null>(null);
+  const [searchResult, setSearchResult] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -37,6 +41,7 @@ export default function Upload() {
     setSelectedOption(e.target.value);
     setSelectedFile(null); // Clear the selected file when the dropdown option changes
     setImagePreview(null);
+
     setAudioURL(null);
   };
 
@@ -54,14 +59,42 @@ export default function Upload() {
     formData.append("selectedOption", selectedOption);
 
     try {
+      console.log("Sending file upload request...");
       // Make a POST request to the server with the form data
       const response = await fetch("/api/process-file-upload", {
         method: "POST",
         body: formData,
       });
 
+      console.log("Response Status: ", response.status); 
       if (response.ok) {
-        console.log("File uploaded successfully");
+        // case if they were searching for an image
+        console.log("im in");
+        if (selectedOption === "Select Image"){
+          const querySearchResponse = await fetch("http://localhost:8080/api/image-search", {
+            method: "POST",
+            body: formData,
+          });
+          if (querySearchResponse.ok) {
+            const result = await querySearchResponse.json();
+            
+            // Hanya tampilkan nama file yang ditemukan
+            if (result) {
+              console.log("File found:", result);
+              setSearchResult(result);
+              const serializedResult = encodeURIComponent(JSON.stringify(result));
+
+              router?.push(`/resultimage?imageresult=${serializedResult}`);
+            } else {
+              setSearchResult("No matching files found.");
+            }
+          }
+        } else if (selectedOption === "Select Audio") { // case if they were searching for an audio
+          
+        } else { // case if they were uploading mapper
+          console.log("Successfully uploaded mapper file")
+        }
+        
       } else {
         console.error("File upload failed");
       }
@@ -86,10 +119,12 @@ export default function Upload() {
     if (audio) {
       audio.play(); // Start playing the audio
     }
+    return "";
   };
 
   return (
     <main>
+
     <form onSubmit={handleSubmit} className="flex flex-col justify-center items-center gap-3">
         {/* Dropdown to select file type */}
         <div className="flex justify-center items-center">
@@ -133,8 +168,6 @@ export default function Upload() {
         <div className="flex justify-center items-center mt-2 text-sm text-center text-gray-600 max-w-[150px] break-words whitespace-normal">
           {selectedFile ? selectedFile.name : "No file selected"}
         </div>
-
-
 
         {/* Choose File button */}
         <div className="flex text-center justify-center items-center">

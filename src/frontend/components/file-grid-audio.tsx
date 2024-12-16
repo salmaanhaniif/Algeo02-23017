@@ -72,7 +72,9 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
     const audio = new Audio(audioFile.url);
     audio.play();
     setCurrentAudio(audio);
+
     setCurrentAudioFileName(audioFile.fileName); 
+
     setIsPopupVisible(true);
   };
 
@@ -80,6 +82,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const handleClosePopup = () => {
     currentAudio?.pause();
     setCurrentAudio(null);
+
     setCurrentAudioFileName(null); 
     setIsPopupVisible(false);
   };
@@ -137,6 +140,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
                 )}
               </div>
               <p className="file-name text-sm text-gray-800 truncate">{title}</p>
+
               {artist && <p className="text-center text-xs text-gray-500">{artist}</p>}
               <button
                 className="play-button bg-blue-500 text-white px-2 py-1 mt-2 rounded"
@@ -153,6 +157,7 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
       {isPopupVisible && currentAudio && (
         <div className="popup fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="popup-content bg-white p-6 rounded shadow-lg w-80">
+
             {(() => {
               const mapperEntry = mapperData.find((file) => file.audio === currentAudioFileName);
               const title = mapperEntry?.title || "No Title"; // Get the title or default to "No Title"
@@ -200,5 +205,6 @@ const FileGridAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
     </section>
   );
 };
+
 
 export default FileGridAudio;

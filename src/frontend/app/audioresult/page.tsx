@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
-import FileGridResult from "@/components/file-grid-result";
+import FileGridResultAudio from "@/components/file-grid-result-audio";
 import Notification from "@/components/notification";
-import Pagination from "@/components/pagination";
 
 const MainPage = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -82,11 +81,9 @@ const MainPage = () => {
       </section>
 
       {/* Komponen FileGrid */}
-      <FileGridResult
+      <FileGridResultAudio
         mapperData={mapperData || []} // Pass mapperData to FileGrid
         />
-
-      {/* Pop-up Audio Player */}
       
     </main>
   );

@@ -15,7 +15,7 @@ interface FileGridProps {
 
 const ITEMS_PER_PAGE = 32;
 
-const FileGridImage: React.FC<FileGridProps> = ({ mapperData = [] }) => {
+const FileGridResultAudio: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   const [imageFiles, setImageFiles] = useState<string[]>([]); // List of image files
   const [imageExists, setImageExists] = useState<Record<string, boolean>>({}); // Track existence of images
   const [currentPage, setCurrentPage] = useState(1); // Current page for pagination
@@ -118,4 +118,4 @@ const FileGridImage: React.FC<FileGridProps> = ({ mapperData = [] }) => {
   );
 };
 
-export default FileGridImage;
+export default FileGridResultAudio;

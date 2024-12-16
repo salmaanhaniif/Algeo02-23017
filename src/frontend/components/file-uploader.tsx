@@ -45,12 +45,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ onUpload }) => {
        onChange={handleChange}
        className="hidden"
        id="file-upload"
-       multiple // Allow multiple file uploads
-      //  ref={(input) => {
-      //   if (input) {
-      //     (input as HTMLInputElement).webkitdirectory = true; // Type assertion here
-      //   }
-      // }} // Allow folder selection (for browsers that support it)
       />
       <label htmlFor="file-upload" className="upload-button z-50">
         +

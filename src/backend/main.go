@@ -22,6 +22,7 @@ import (
 	_ "image/png"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 func loadEnv() {
@@ -190,7 +191,7 @@ func uploadCSVHandler(w http.ResponseWriter, r *http.Request) {
 }
 func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
-	file, header, err := r.FormFile("query")
+	file, header, err := r.FormFile("file")
 	if err != nil {
 		http.Error(w, "Failed to read query file", http.StatusBadRequest)
 		return
@@ -253,6 +254,7 @@ func querySearchHandler(w http.ResponseWriter, r *http.Request) {
 	for _, dist := range distance {
 		if dist.Distance == 0 {
 			results = append(results, dist)
+			fmt.Printf("Similar file: %s, Similarity: %f\n", dist.FileName, dist.Similarity)
 		}
 	}
 	if len(results) > 0 {
@@ -275,8 +277,14 @@ func main() {
 	// http.HandleFunc("/upload", uploadCSVHandler)
 	r := mux.NewRouter()
 	r.HandleFunc("/api/image-search", querySearchHandler).Methods("POST")
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"http://localhost:3000"}, // Hanya izinkan dari localhost:3000
+		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders: []string{"Content-Type", "Authorization"},
+	})
+	handler := c.Handler(r)
 
 	// Start the server
 	fmt.Println("Server started at :8080")
-	http.ListenAndServe(":8080", r)
+	http.ListenAndServe(":8080", handler)
 }

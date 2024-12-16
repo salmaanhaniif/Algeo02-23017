@@ -3,7 +3,9 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import { promisify } from "util";
+import { execFile } from "child_process";
 import AdmZip from "adm-zip";
+
 
 // Folder tujuan untuk menyimpan file WAV
 const uploadFolder = path.join(process.cwd(), "public", "uploads");
@@ -97,36 +99,6 @@ async function convertWavToMidi(wavFile: string, midiFile: string) {
   }
 }
 
-const extractRarFile = async (filePath: string, destination: string) => {
-  try {
-    const buffer = await fs.readFile(filePath);
-    const unrarStream = unrar.createStream(buffer);
-
-    // Explicitly typing the files array
-    const files: any[] = [];
-
-    // Extract files from the RAR archive
-    unrarStream.on("file", (file: any) => {
-      files.push(file);
-    });
-
-    unrarStream.on("end", async () => {
-      for (const file of files) {
-        const filePath = path.join(destination, file.fileHeader.name);
-        await fs.writeFile(filePath, file.data);
-        console.log("Saved file:", file.fileHeader.name);
-      }
-    });
-
-    unrarStream.on("error", (error: Error) => {
-      console.error("Error extracting RAR file:", error);
-    });
-
-    unrarStream.end();
-  } catch (error) {
-    console.error("Error reading RAR file:", error);
-  }
-};
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {

@@ -3,15 +3,25 @@ package main
 import (
 	"database/sql"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"image"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"path/filepath"
+
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+
+	"Algeo02-23017/src/backend/utils"
+	_ "image/jpeg"
+	_ "image/png"
+
+	"github.com/gorilla/mux"
 )
 
 func loadEnv() {
@@ -178,14 +188,95 @@ func uploadCSVHandler(w http.ResponseWriter, r *http.Request) {
 	// Return success message
 	w.Write([]byte("File uploaded and processed successfully"))
 }
+func querySearchHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseMultipartForm(10 << 20)
+	file, header, err := r.FormFile("query")
+	if err != nil {
+		http.Error(w, "Failed to read query file", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	ext := filepath.Ext(header.Filename)
+	if ext != ".jpg" && ext != ".jpeg" && ext != ".png" {
+		http.Error(w, "Invalid file type. Only JPG, JPEG, and PNG are allowed.", http.StatusBadRequest)
+		return
+	}
+
+	queryPath := filepath.Join(queryDir, "query"+ext)
+	dst, err := os.Create(queryPath)
+	if err != nil {
+		fmt.Println(err)
+		http.Error(w, "Failed to save query file", http.StatusInternalServerError)
+		return
+	}
+	defer dst.Close()
+
+	_, err = dst.ReadFrom(file)
+	if err != nil {
+		http.Error(w, "Failed to write query file", http.StatusInternalServerError)
+		return
+	}
+
+	imageVectors, filenames, err := utils.LoadImagesFromFolder(uploadDir)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to load images: %v", err), http.StatusInternalServerError)
+		return
+	}
+	avg, standar := utils.Standarisasi(imageVectors)
+	kovarian := utils.MatriksKovarian(standar)
+	U, err := utils.Svd(kovarian)
+	projected := utils.Proyeksi(U, standar, 50)
+	queryFile, err := os.Open(queryPath)
+	if err != nil {
+		http.Error(w, "Failed to open query file", http.StatusInternalServerError)
+		return
+	}
+	defer queryFile.Close()
+
+	queryImage, _, err := image.Decode(queryFile)
+	if err != nil {
+		http.Error(w, "Failed to decode query image", http.StatusInternalServerError)
+		return
+	}
+
+	queryGray := utils.ToGrayscale(queryImage)
+	queryResized := utils.ResizeImage(queryGray, 64, 64)
+	queryVector := utils.FlattenImage(queryResized)
+	queryStandar := utils.StandarisasiQuery([][]uint8{queryVector}, avg)
+	queryProjected := utils.Proyeksi(U, queryStandar, 50)
+
+	distance := utils.HitungJarakParallel(projected, queryProjected, filenames)
+	var results []utils.DistanceIndex
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	for _, dist := range distance {
+		if dist.Distance == 0 {
+			results = append(results, dist)
+		}
+	}
+	if len(results) > 0 {
+		for i := 0; i < len(results); i++ {
+			json.NewEncoder(w).Encode(map[string]string{"message": "Similar file found", "filename": results[i].FileName})
+		}
+	} else {
+		json.NewEncoder(w).Encode(map[string]string{"message": "No matching files found", "filename": ""})
+	}
+}
+
+const (
+	uploadDir = "../frontend/public/uploads"
+	queryDir  = "../frontend/public/query/image"
+)
 
 func main() {
-	loadEnv()
-
+	//loadEnv()
 	// Set up the HTTP server and routes
-	http.HandleFunc("/upload", uploadCSVHandler)
+	// http.HandleFunc("/upload", uploadCSVHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/api/image-search", querySearchHandler).Methods("POST")
 
 	// Start the server
 	fmt.Println("Server started at :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.ListenAndServe(":8080", r)
 }

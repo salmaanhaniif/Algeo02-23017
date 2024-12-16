@@ -1,5 +1,5 @@
 # Algeo02-23017
-Tugas Besar 2 IF2123 Aljabar Linier dan Geometri Sistem Persamaan Linier, Determinan, dan Aplikasinya Semester I Tahun 2024/2025
+Tugas Besar 2 IF2123 Aljabar Linier dan Geometri Semester I Tahun 2024/2025
 
 ## Deskripsi Umum
 Proyek Sistem Temu Balik Suara dan Image Retrieval dengan PCA Berbasis Website

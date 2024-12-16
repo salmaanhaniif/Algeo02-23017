@@ -1,26 +1,14 @@
-<<<<<<< HEAD
 "use client";
 
 import React, { useState, useEffect } from "react";
 import FileUploader from "@/components/file-uploader";
 import FileGrid from "@/components/file-grid";
 import Pagination from "@/components/pagination";
+import Mapper from "../components/showmapper";
 
 interface AudioFile {
   fileName: string;
   url: string;
-=======
-import DragandDrop from "@/components/draganddrop";
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center min-h-screen">
-      {/* <h1 className="text-2xl">Hello World!</h1> */}
-      <DragandDrop/>
-    </div>
-  );
->>>>>>> abadc3f16c59868370cf831728c45a25d03187d3
 }
 
 const ITEMS_PER_PAGE = 28;
@@ -102,6 +90,8 @@ const MainPage = () => {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const displayedFiles = audioFiles.slice(startIndex, endIndex);
 
+  const [isPopUpOpen, setIsPopUpOpen] = useState(false);
+
   return (
     <main className="main-content">
       <section className="file-uploader-section mb-4">
@@ -123,6 +113,12 @@ const MainPage = () => {
           onPageChange={(page) => setCurrentPage(page)}
         />
       )}
+
+    <div>
+      <h1>My Next.js Page</h1>
+      <button onClick={() => setIsPopUpOpen(true)}>Show Pop-Up</button>
+      <Mapper isOpen={isPopUpOpen} onClose={() => setIsPopUpOpen(false)} />
+    </div>
 
       {/* Pop-up Audio Player */}
       {isPopupVisible && currentAudio && (

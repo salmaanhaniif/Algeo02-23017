@@ -21,8 +21,6 @@ export default function RootLayout({
       <div className="row-span-1 col-span-2 z-10">
         <TopBar />
       </div>
-
-  
       <div className="row-span-2 z-0">
         <SidebarProvider> 
         <AppSidebar />
